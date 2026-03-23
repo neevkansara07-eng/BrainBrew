@@ -1,0 +1,74 @@
+{# Register page: creates a user account and uses the password strength check JS. #}
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5 col-lg-4">
+        
+        <div class="glass-panel text-center position-relative overflow-hidden">
+            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);"></div>
+
+            <div class="mb-4">
+                <div class="mb-3">
+                    <i class="fas fa-rocket fa-3x text-gradient"></i>
+                </div>
+                <h3 class="fw-bold text-white">Create Account</h3>
+                <p class="text-white-50 small">Join the platform to start tracking your progress.</p>
+            </div>
+
+            <form action="{{ url_for('register') }}" method="POST">
+                <div class="mb-3 text-start">
+                    <label class="small text-white-50 fw-bold mb-1 ms-1">FULL NAME</label>
+                    <input type="text" name="name" class="form-control" placeholder="Your name" required>
+                </div>
+
+                <div class="mb-3 text-start">
+                    <label class="small text-white-50 fw-bold mb-1 ms-1">EMAIL</label>
+                    <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+                </div>
+
+                <div class="mb-4 text-start">
+                    <label class="small text-white-50 fw-bold mb-1 ms-1">PASSWORD</label>
+                    <input type="password" id="passwordInput" name="password" class="form-control" placeholder="••••••••" required>
+                    <div class="mt-2" id="passwordFeedback"></div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-glow w-100" disabled>
+                    Create Account
+                </button>
+            </form>
+
+            <script>
+                const passwordInput = document.getElementById('passwordInput');
+                const submitBtn = document.getElementById('submitBtn');
+                const feedback = document.getElementById('passwordFeedback');
+
+                passwordInput.addEventListener('input', function() {
+                    const val = passwordInput.value;
+                    let valid = true;
+                    let msg = [];
+
+                    if (val.length <= 8) { valid = false; msg.push("Length > 8"); }
+                    if (!/\d/.test(val)) { valid = false; msg.push("Number"); }
+                    if (!/[A-Z]/.test(val)) { valid = false; msg.push("Capital"); }
+                    if (!/[!@#$%^&*]/.test(val)) { valid = false; msg.push("Special Char"); }
+
+                    if (valid) {
+                        submitBtn.disabled = false;
+                        feedback.innerHTML = '<span class="text-success small"><i class="fas fa-check-circle"></i> Strong Password</span>';
+                    } else {
+                        submitBtn.disabled = true;
+                        feedback.innerHTML = '<span class="text-danger small">' + msg.join(', ') + '</span>';
+                    }
+                });
+            </script>
+
+            <div class="mt-4 pt-4 border-top border-white border-opacity-10 text-center">
+                <p class="text-white-50 small mb-0">
+                    Already have an account? <a href="{{ url_for('index') }}" class="text-white fw-bold text-decoration-none">Sign In</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{# Battle share page: displays the 6-char code and an invite link to copy. #}
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="glass-panel text-center p-5 position-relative overflow-hidden" style="max-width: 500px;">
+        
+        <div style="position: absolute; width: 400px; height: 400px; border: 2px dashed var(--glass-border); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: spinSlow 20s linear infinite;"></div>
+
+        <div class="mb-4">
+            <i class="fas fa-fist-raised text-white fa-4x mb-3" style="text-shadow: 0 0 30px var(--primary-accent); color: var(--text-main) !important;"></i>
+            <h2 class="fw-bold text-white">Battle Ready</h2>
+            <p class="text-white-50">Share this access code with your opponent.</p>
+        </div>
+
+        <div class="p-4 rounded-3 mb-4 position-relative" style="background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border);">
+            <h1 class="display-4 fw-bold text-white mb-0" style="letter-spacing: 5px; font-family: monospace;">{{ code }}</h1>
+            <p class="text-white-50 small mt-2 mb-0">SESSION ID</p>
+        </div>
+
+        <div class="d-grid gap-3">
+            <button onclick="navigator.clipboard.writeText('{{ url_for('join_battle', code_val=code, _external=True) }}'); alert('Battle Link Copied!');" 
+                    class="btn btn-outline-light py-2">
+                <i class="fas fa-link me-2"></i> Copy Invite Link
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-glow py-2">
+                Return to Base
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    @keyframes spinSlow { to { transform: translate(-50%, -50%) rotate(360deg); } }
+</style>
+{% endblock %}

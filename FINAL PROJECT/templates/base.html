@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!-- Base layout for basically every page.
+     I put the theme (dark/glass) + navbar + shared scripts here so templates can stay clean. -->
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainBrew | Intelligent Learning</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#6366f1">
+
+    <style>
+        /* --- 1. THEME VARIABLES --- */
+        :root {
+            /* DARK MODE (High Contrast) */
+            --bg-color: #050505;
+            --glass-bg: rgba(20, 20, 20, 0.9); 
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --primary-accent: #6366f1; /* Indigo */
+            --secondary-accent: #ec4899; /* Pink */
+            --text-main: #ffffff;
+            --text-muted: #e2e8f0; 
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            --input-bg: rgba(255, 255, 255, 0.1); /* Brighter inputs */
+            --nav-bg: rgba(10, 10, 10, 0.95);
+            --blob-opacity: 0.4;
+        }
+
+        /* LIGHT MODE OVERRIDES */
+        [data-theme="light"] {
+            --bg-color: #f3f4f6;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --primary-accent: #4f46e5;
+            --secondary-accent: #db2777;
+            --text-main: #0f172a; 
+            --text-muted: #475569; 
+            --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --input-bg: rgba(0, 0, 0, 0.06); 
+            --nav-bg: rgba(255, 255, 255, 0.9);
+            --blob-opacity: 0.2;
+        }
+
+        /* --- 2. CRITICAL VISIBILITY FIXES --- */
+
+        /* FIX 1: LOGIN & INPUT PLACEHOLDERS */
+        .form-control::placeholder {
+            color: #cbd5e1 !important; /* Bright Grey */
+            opacity: 1 !important;
+            font-weight: 500;
+        }
+        
+        /* FIX 2: INPUT TEXT COLOR */
+        .form-control, .form-select {
+            color: #ffffff !important; 
+            background-color: var(--input-bg) !important;
+            border: 1px solid var(--glass-border) !important;
+        }
+
+        /* FIX 3: DROPDOWN MENU LIST */
+        select option {
+            background-color: #222222 !important; 
+            color: #ffffff !important;
+        }
+        [data-theme="light"] select option {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        /* FIX 4: BLUE BUTTON KILLER (Force Purple) */
+        .btn-primary, .bg-primary, .text-primary {
+            background-color: var(--primary-accent) !important;
+            border-color: var(--primary-accent) !important;
+            color: white !important;
+        }
+        .text-primary { background: none !important; color: var(--primary-accent) !important; }
+        
+        .form-range::-webkit-slider-thumb { background: var(--primary-accent); }
+        .form-range::-moz-range-thumb { background: var(--primary-accent); }
+
+        /* FIX 5: YELLOW FIRE ICON */
+        .fa-fire {
+            color: #ffc107 !important; /* Golden Yellow */
+            filter: drop-shadow(0 0 5px rgba(255, 193, 7, 0.6));
+        }
+        .nav-link .text-warning { color: #ffc107 !important; }
+
+        /* FIX 6: PERFECT ROUND THEME TOGGLE */
+        .theme-toggle {
+            width: 42px; height: 42px;
+            border-radius: 50% !important;
+            padding: 0 !important;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .theme-toggle:hover {
+            transform: rotate(15deg) scale(1.1);
+            background-color: var(--primary-accent) !important;
+            color: white !important;
+            border-color: var(--primary-accent) !important;
+        }
+
+        /* FIX 7: SOLID TABLE HEADERS */
+        .table thead th {
+            position: sticky; top: 0;
+            background-color: #111111 !important;
+            color: #ffffff !important;
+            z-index: 50;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        [data-theme="light"] .table thead th { background-color: #e5e7eb !important; color: #000000 !important; }
+
+        /* General Utilities */
+        .text-muted { color: var(--text-muted) !important; opacity: 1 !important; }
+        .text-white-50 { color: var(--text-muted) !important; opacity: 1 !important; }
+        [data-theme="light"] .badge { background-color: var(--primary-accent) !important; color: #fff !important; }
+        [data-theme="light"] .text-white { color: var(--text-main) !important; }
+        [data-theme="light"] .form-control, [data-theme="light"] .form-select { color: var(--text-main) !important; }
+
+        /* --- 3. CORE STYLES --- */
+        body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; position: relative; transition: 0.3s; }
+        .glass-panel { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 32px; box-shadow: var(--card-shadow); transition: 0.3s; }
+        .glass-panel:hover { transform: translateY(-2px); border-color: var(--primary-accent); }
+        .btn-glow { background: var(--text-main); color: var(--bg-color); font-weight: 700; border-radius: 12px; padding: 12px 24px; border: none; transition: 0.3s; }
+        .btn-glow:hover { opacity: 0.9; transform: scale(1.02); box-shadow: 0 0 15px var(--primary-accent); }
+        .form-control:focus, .form-select:focus { border-color: var(--primary-accent) !important; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important; }
+        .glass-nav { background: var(--nav-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 100px; padding: 12px 24px; }
+        .nav-link { color: var(--text-muted) !important; font-weight: 600; transition: 0.3s; margin: 0 8px; }
+        .nav-link:hover, .nav-link.active { color: var(--text-main) !important; }
+        .aurora-blob { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; animation: float 10s infinite alternate; opacity: var(--blob-opacity); }
+        .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--primary-accent); }
+        .blob-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: var(--secondary-accent); animation-delay: -5s; }
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
+        a { text-decoration: none; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); z-index: 9999; display: none; justify-content: center; align-items: center; flex-direction: column; }
+        .loader-spinner { width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: var(--primary-accent); animation: spin 1s infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* =========================================
+           LIGHT MODE OVERRIDES
+           ========================================= */
+        /* =========================================
+   REFINED LIGHT MODE (The "Porcelain" Look)
+   ========================================= */
+[data-theme="light"] {
+    /* 1. Base Colors: Clean Slate/White */
+    --bg-color: #f0f2f5; /* Very light grey-blue (Facebook/Twitter style) */
+    --glass-bg: rgba(255, 255, 255, 0.9); /* Solid White Glass */
+    --glass-border: rgba(0, 0, 0, 0.05); /* Very subtle border */
+    
+    /* 2. Text: High Contrast Dark Grey (Not pure black) */
+    --text-main: #1f2937; /* Gray-900 */
+    --text-muted: #6b7280; /* Gray-500 */
+    
+    /* 3. Accents: Keep the Identity, but bolder */
+    --primary-accent: #4f46e5; /* Indigo-600 */
+    --secondary-accent: #db2777; /* Pink-600 */
+    
+    /* 4. UI Elements */
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
+    --input-bg: #ffffff; /* Pure white inputs */
+    --nav-bg: rgba(255, 255, 255, 0.95);
+    
+    /* 5. Background Blobs: Faint */
+    --blob-opacity: 0.15; /* Lower opacity so it doesn't look like a stain */
+}
+
+/* =========================================
+   PREMIUM LIGHT MODE ("Frosted Glass" Style)
+   ========================================= */
+[data-theme="light"] {
+    /* 1. Background: Soft, airy gray-blue */
+    --bg-color: #f3f4f6;
+    
+    /* 2. Glass: "Icy" White (Semi-Transparent) */
+    /* This allows the blobs to shine through slightly */
+    --glass-bg: rgba(255, 255, 255, 0.65); 
+    
+    /* 3. Border: Crisp White Ring */
+    --glass-border: rgba(255, 255, 255, 0.9);
+    
+    /* 4. Text: Deep Navy (Expensive looking dark) */
+    --text-main: #1e293b; /* Slate-800 */
+    --text-muted: #64748b; /* Slate-500 */
+    
+    /* 5. Accents: Keep them vibrant */
+    --primary-accent: #6366f1; /* Indigo */
+    --secondary-accent: #ec4899; /* Pink */
+    
+    /* 6. Shadows: The Secret Sauce (Soft & Deep) */
+    --card-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+        0 10px 15px -3px rgba(0, 0, 0, 0.05),
+        0 0 0 1px rgba(255, 255, 255, 0.8) inset; /* Inner glow */
+        
+    --input-bg: rgba(255, 255, 255, 0.8); 
+    --nav-bg: rgba(255, 255, 255, 0.8);
+    
+    /* 7. BRING THE BLOBS BACK (Pastel Colors) */
+    --blob-opacity: 0.8; 
+}
+
+/* --- LIGHT MODE SPECIFIC ADJUSTMENTS --- */
+
+/* 1. Pastel Blobs (Crucial for the premium look) */
+/* We change the blobs from Neon (Dark Mode) to Pastel (Light Mode) */
+[data-theme="light"] .blob-1 { background: #c7d2fe; filter: blur(100px); } /* Soft Indigo */
+[data-theme="light"] .blob-2 { background: #fbcfe8; filter: blur(100px); } /* Soft Pink */
+
+/* 2. Glass Panels: The "Ice Cube" Effect */
+[data-theme="light"] .glass-panel {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(25px) !important; /* Heavy Blur */
+    -webkit-backdrop-filter: blur(25px) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--card-shadow) !important;
+}
+
+/* 3. Typography Fixes */
+[data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3, 
+[data-theme="light"] h4, [data-theme="light"] h5, [data-theme="light"] strong {
+    color: #0f172a !important; /* Nearly Black */
+    letter-spacing: -0.5px; /* Tighter tracking looks more modern */
+}
+[data-theme="light"] p, [data-theme="light"] span, [data-theme="light"] div {
+    color: var(--text-main);
+}
+[data-theme="light"] .text-white-50 { color: #64748b !important; }
+
+/* 4. Navbar Polish */
+[data-theme="light"] .glass-nav {
+    background: rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 1);
+}
+[data-theme="light"] .navbar-brand { color: #0f172a !important; font-weight: 800; }
+[data-theme="light"] .nav-link { color: #475569 !important; font-weight: 600; }
+[data-theme="light"] .nav-link:hover { color: var(--primary-accent) !important; background: rgba(99, 102, 241, 0.1); border-radius: 20px;}
+
+/* 5. Input Fields: Soft & Clean */
+[data-theme="light"] .form-control, 
+[data-theme="light"] .form-select {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02) !important;
+}
+[data-theme="light"] .form-control:focus {
+    border-color: var(--primary-accent) !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* 6. Dashboard Cards Override */
+/* This forces your Sidebar Cards to look good in light mode */
+[data-theme="light"] .card-hover {
+    background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 100%) !important;
+    border: 1px solid #fff !important;
+}
+    </style>
+</head>
+<body>
+    <div id="loader"><div class="loader-spinner mb-3"></div><div class="text-white small fw-bold">PROCESSING...</div></div>
+    <div class="aurora-blob blob-1"></div><div class="aurora-blob blob-2"></div>
+
+    <div class="container nav-container sticky-top">
+        <nav class="navbar navbar-expand-lg glass-nav">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url_for('index') }}" style="color: var(--text-main);">
+                    <div class="rounded-circle d-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px; background: var(--text-main);">
+                        <i class="fas fa-bolt" style="font-size: 0.8rem; color: var(--bg-color);"></i>
+                    </div>BrainBrew
+                </a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent"><span class="fas fa-bars" style="color: var(--text-main);"></span></button>
+                <div class="collapse navbar-collapse" id="navContent">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        
+                        {% if session.user_id %}
+                            {% if session.get('role') == 'admin' %}
+                                <li class="nav-item"><a class="nav-link active" href="{{ url_for('admin_dashboard') }}">Command Center</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+                            {% else %}
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('flashcard_setup') }}">Zen Mode</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('create_battle') }}">Battle</a></li>
+                                <li class="nav-item ms-2"><span class="nav-link text-warning"><i class="fas fa-fire me-1"></i> {{ session.get('streak', 0) }}</span></li>
+                                
+                                {% endif %}
+                            
+                            <li class="nav-item ms-3">
+                                <div class="theme-toggle" id="themeSwitcher" title="Toggle Theme">
+                                    <i class="fas fa-moon"></i>
+                                </div>
+                            </li>
+
+                            <li class="nav-item ms-2"><a href="{{ url_for('logout') }}" class="btn btn-sm" style="color: var(--text-muted);" title="Logout"><i class="fas fa-sign-out-alt"></i></a></li>
+                        
+                        {% else %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Sign In</a></li>
+                            <li class="nav-item ms-2"><div class="theme-toggle" id="themeSwitcher"><i class="fas fa-moon"></i></div></li>
+                            <li class="nav-item ms-2"><a class="btn btn-sm btn-glow py-2 px-4" href="{{ url_for('register') }}">Join Now</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="container mt-5 mb-5 fade-in">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="glass-panel py-3 px-4 mb-4 d-flex align-items-center justify-content-between" style="border-left: 4px solid var(--primary-accent);">
+                <div class="d-flex align-items-center gap-3"><i class="fas fa-bell" style="color: var(--text-main);"></i><span class="small" style="color: var(--text-main);">{{ message }}</span></div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" style="filter: invert(1) grayscale(100%) brightness(200%);"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const themeBtn = document.getElementById('themeSwitcher');
+        const themeIcon = themeBtn.querySelector('i');
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+        updateIcon(savedTheme);
+
+        themeBtn.addEventListener('click', () => {
+            const current = html.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateIcon(newTheme);
+        });
+
+        function updateIcon(t) { themeIcon.className = t === 'dark' ? 'fas fa-moon' : 'fas fa-sun'; }
+
+        const hoverSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-modern-technology-select-3124.mp3");
+        const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3");
+        hoverSound.volume=0.2; clickSound.volume=0.4;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('a, button, input, select').forEach(el => {
+                el.addEventListener('mouseenter', () => hoverSound.play().catch(()=>{}));
+                el.addEventListener('click', () => clickSound.play().catch(()=>{}));
+            });
+            document.querySelectorAll('form').forEach(f => f.addEventListener('submit', () => { if(f.checkValidity()) document.getElementById('loader').style.display='flex'; }));
+        });
+    </script>
+</body>
+</html>

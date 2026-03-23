@@ -1,0 +1,87 @@
+{# Result page after submitting a quiz: score + chart + certificate options. #}
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        
+        <div class="glass-card p-5 text-center mb-4">
+            <h1 class="display-4 fw-bold text-primary">Score: {{ score }} / {{ total }}</h1>
+            
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-6">
+                    <canvas id="chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="mt-4 mb-5">
+                <a href="{{ url_for('quiz_setup') }}" class="btn btn-primary">Try Again</a>
+                <a href="{{ url_for('profile') }}" class="btn btn-info">My History</a>
+            </div>
+
+            <div class="pt-4 border-top" style="border-color: rgba(0,0,0,0.1) !important;">
+                <p class="text-muted small mb-3">OFFICIAL CERTIFIED RESULT FOR <strong class="text-dark">{{ session.name }}</strong></p>
+
+                <div class="d-flex justify-content-center gap-5">
+                    
+                    <div class="text-center">
+                        <img src="{{ url_for('static', filename='signature.png') }}" 
+                             style="height: 50px; display: block; margin: 0 auto 5px auto;" 
+                             onerror="this.style.display='none'">
+                        
+                        <div style="border-top: 2px solid #333; width: 150px; font-size: 0.75rem; color: #666; padding-top: 5px;">
+                            AUTHORIZED SIGNATURE
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <div id="certDate" style="height: 50px; line-height: 50px; font-weight: bold; font-family: monospace; font-size: 1.1rem;">
+                            {{ date }}
+                        </div>
+                        <div style="border-top: 2px solid #333; width: 150px; font-size: 0.75rem; color: #666; padding-top: 5px;">
+                            DATE RECORDED
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            </div>
+
+        <div class="glass-card p-4">
+            <h3 class="mb-3"><i class="fas fa-glasses"></i> Detailed Review</h3>
+            {% for item in review %}
+            <div class="card mb-3 border-{{ 'success' if item.is_correct else 'danger' }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.question }}</h5>
+                    <p class="card-text">
+                        <strong>Your Answer:</strong> {{ item.user_opt }} 
+                        {% if item.is_correct %} <i class="fas fa-check text-success"></i>
+                        {% else %} <i class="fas fa-times text-danger"></i> (Correct: {{ item.correct_opt }})
+                        {% endif %}
+                    </p>
+                    <div class="text-muted small">
+                        A: {{ item.options['A'] }} | B: {{ item.options['B'] }} | 
+                        C: {{ item.options['C'] }} | D: {{ item.options['D'] }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. Chart Logic
+    new Chart(document.getElementById('chart'), {
+        type: 'doughnut',
+        data: { labels: ['Correct', 'Incorrect'], datasets: [{ data: [{{ score }}, {{ total-score }}], backgroundColor: ['#2ecc71', '#e74c3c'] }] }
+    });
+
+    // 2. Date Filler (In case Python didn't send a date)
+    const dateElem = document.getElementById('certDate');
+    if (!dateElem.innerText.trim()) {
+        const now = new Date();
+        dateElem.innerText = now.toLocaleDateString();
+    }
+</script>
+{% endblock %}

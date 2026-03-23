@@ -1,0 +1,71 @@
+{# Leaderboard: ranks users by total XP (and shows streaks). #}
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        
+        <div class="glass-panel text-center mb-4">
+            <h1 class="fw-bold text-white mb-2"><i class="fas fa-trophy text-warning me-2"></i>Global Rankings</h1>
+            <p class="text-white-50">Top Agents ranked by Total XP & Streaks.</p>
+        </div>
+
+        <div class="glass-panel p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table text-white mb-0" style="--bs-table-bg: transparent;">
+                    <thead class="bg-white bg-opacity-10">
+                        <tr class="text-white small fw-bold text-uppercase">
+                            <th class="py-3 ps-4">Rank</th>
+                            <th class="py-3">Agent</th>
+                            <th class="py-3 text-center">Streak</th>
+                            <th class="py-3 text-end pe-4">Total XP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in leaders %}
+                        <tr class="align-middle border-bottom border-white border-opacity-10">
+                            <td class="ps-4 py-3 fw-bold" style="font-size: 1.2rem;">
+                                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}#{{ loop.index }}{% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if not player.profile_pic or player.profile_pic == 'default.png' %}
+                                        <img src="https://ui-avatars.com/api/?name={{ player.name }}&background=6366f1&color=fff&bold=true" 
+                                             class="rounded-circle border border-white border-opacity-25 shadow-sm" 
+                                             width="40" height="40" style="object-fit: cover;">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='uploads/' + player.profile_pic) }}" 
+                                             class="rounded-circle border border-white border-opacity-25 shadow-sm" 
+                                             width="40" height="40" style="object-fit: cover;">
+                                    {% endif %}
+                                    <span class="fw-bold {{ 'text-warning' if loop.index == 1 else 'text-white' }}">
+                                        {{ player.name }}
+                                        {% if player.name == session.name %}
+                                            <small class="text-muted ms-1">(You)</small>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                {% if player.streak > 0 %}
+                                <span class="badge bg-danger bg-opacity-20 text-warning border border-danger border-opacity-25">
+                                    <i class="fas fa-fire me-1"></i> {{ player.streak }}
+                                </span>
+                                {% else %}
+                                <span class="text-white-50">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <span class="badge bg-white bg-opacity-10 border border-white border-opacity-20 px-3 py-2 rounded-pill">
+                                    {{ player.total_xp if player.total_xp else 0 }} XP
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
